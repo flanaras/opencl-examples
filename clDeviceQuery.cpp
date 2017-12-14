@@ -1,7 +1,7 @@
 /* Copyright 1993-2009 NVIDIA Corporation.  All rights reserved.
    Modified by Mark Zwolinski, December 2009 
    Modified by Robert McGibbon, August 2013
-*/
+ */
 #ifdef __APPLE__
 #include <OpenCL/opencl.h>
 #else
@@ -146,7 +146,7 @@ void clPrintDevInfo(cl_device_id device) {
   clGetDeviceInfo(device, CL_DEVICE_PREFERRED_VECTOR_WIDTH_FLOAT, sizeof(cl_uint), &vec_width[4], NULL);
   clGetDeviceInfo(device, CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE, sizeof(cl_uint), &vec_width[5], NULL);
   printf("CHAR %u, SHORT %u, INT %u, FLOAT %u, DOUBLE %u\n\n\n",
-   vec_width[0], vec_width[1], vec_width[2], vec_width[3], vec_width[4]);
+      vec_width[0], vec_width[1], vec_width[2], vec_width[3], vec_width[4]);
 }
 
 
@@ -173,88 +173,88 @@ int main(int argc, const char** argv) {
     } else {
       // if there's one platform or more, make space for ID's
       if ((clPlatformIDs = (cl_platform_id*)malloc(num_platforms * sizeof(cl_platform_id))) == NULL) {
-	printf("Failed to allocate memory for cl_platform ID's!\n\n");
-	bPassed = false;
+        printf("Failed to allocate memory for cl_platform ID's!\n\n");
+        bPassed = false;
       }
 
       printf("%d OpenCL Platforms found\n\n", num_platforms);
       // get platform info for each platform
       ciErrNum = clGetPlatformIDs (num_platforms, clPlatformIDs, NULL);
       for(cl_uint i = 0; i < num_platforms; ++i) {
-	ciErrNum = clGetPlatformInfo (clPlatformIDs[i], CL_PLATFORM_NAME, 1024, &cBuffer, NULL);
-	if(ciErrNum == CL_SUCCESS) {
-	  clSelectedPlatformID = clPlatformIDs[i];
-	  // Get OpenCL platform name and version
-	  ciErrNum = clGetPlatformInfo (clSelectedPlatformID, CL_PLATFORM_NAME, sizeof(cBuffer), cBuffer, NULL);
-	  if (ciErrNum == CL_SUCCESS) {
-	    printf(" CL_PLATFORM_NAME: \t%s\n", cBuffer);
-	    sProfileString += cBuffer;
-	  } else {
-	    printf(" Error %i in clGetPlatformInfo Call !!!\n\n", ciErrNum);
-    bPassed = false;
-  }
-  sProfileString += ", Platform Version = ";
+        ciErrNum = clGetPlatformInfo (clPlatformIDs[i], CL_PLATFORM_NAME, 1024, &cBuffer, NULL);
+        if(ciErrNum == CL_SUCCESS) {
+          clSelectedPlatformID = clPlatformIDs[i];
+          // Get OpenCL platform name and version
+          ciErrNum = clGetPlatformInfo (clSelectedPlatformID, CL_PLATFORM_NAME, sizeof(cBuffer), cBuffer, NULL);
+          if (ciErrNum == CL_SUCCESS) {
+            printf(" CL_PLATFORM_NAME: \t%s\n", cBuffer);
+            sProfileString += cBuffer;
+          } else {
+            printf(" Error %i in clGetPlatformInfo Call !!!\n\n", ciErrNum);
+            bPassed = false;
+          }
+          sProfileString += ", Platform Version = ";
 
-  ciErrNum = clGetPlatformInfo (clSelectedPlatformID, CL_PLATFORM_VERSION, sizeof(cBuffer), cBuffer, NULL);
-  if (ciErrNum == CL_SUCCESS) {
-    printf(" CL_PLATFORM_VERSION: \t%s\n", cBuffer);
-    sProfileString += cBuffer;
-  } else {
-    printf(" Error %i in clGetPlatformInfo Call !!!\n\n", ciErrNum);
-    bPassed = false;
-  }
+          ciErrNum = clGetPlatformInfo (clSelectedPlatformID, CL_PLATFORM_VERSION, sizeof(cBuffer), cBuffer, NULL);
+          if (ciErrNum == CL_SUCCESS) {
+            printf(" CL_PLATFORM_VERSION: \t%s\n", cBuffer);
+            sProfileString += cBuffer;
+          } else {
+            printf(" Error %i in clGetPlatformInfo Call !!!\n\n", ciErrNum);
+            bPassed = false;
+          }
 
-  // Log OpenCL SDK Version # (for convenience:  not specific to OpenCL)
-  sProfileString += ", NumDevs = ";
+          // Log OpenCL SDK Version # (for convenience:  not specific to OpenCL)
+          sProfileString += ", NumDevs = ";
 
-  // Get and log OpenCL device info
-  cl_uint ciDeviceCount;
-  cl_device_id *devices;
-  printf("OpenCL Device Info:\n\n");
-  ciErrNum = clGetDeviceIDs (clSelectedPlatformID, CL_DEVICE_TYPE_ALL, 0, NULL, &ciDeviceCount);
+          // Get and log OpenCL device info
+          cl_uint ciDeviceCount;
+          cl_device_id *devices;
+          printf("OpenCL Device Info:\n\n");
+          ciErrNum = clGetDeviceIDs (clSelectedPlatformID, CL_DEVICE_TYPE_ALL, 0, NULL, &ciDeviceCount);
 
-  // check for 0 devices found or errors...
-  if (ciDeviceCount == 0) {
-    printf(" No devices found supporting OpenCL (return code %i)\n\n", ciErrNum);
-    bPassed = false;
-    sProfileString += "0";
-  } else if (ciErrNum != CL_SUCCESS) {
-    printf(" Error %i in clGetDeviceIDs call !!!\n\n", ciErrNum);
-    bPassed = false;
-  } else {
-    // Get and log the OpenCL device ID's
-    ciErrNum = clGetPlatformInfo (clSelectedPlatformID, CL_PLATFORM_NAME, sizeof(cBuffer), cBuffer, NULL);
-    printf(" %u devices found supporting OpenCL on: %s\n\n", ciDeviceCount, cBuffer);
-    char cTemp[2];
-    sprintf(cTemp, "%u", ciDeviceCount);
-    sProfileString += cTemp;
-    if ((devices = (cl_device_id*)malloc(sizeof(cl_device_id) * ciDeviceCount)) == NULL) {
-      printf(" Failed to allocate memory for devices !!!\n\n");
-      bPassed = false;
-    }
-    ciErrNum = clGetDeviceIDs (clSelectedPlatformID, CL_DEVICE_TYPE_ALL, ciDeviceCount, devices, &ciDeviceCount);
-    if (ciErrNum == CL_SUCCESS) {
-      for(unsigned int i = 0; i < ciDeviceCount; ++i )  {
-        printf(" ----------------------------------\n");
-clGetDeviceInfo(devices[i], CL_DEVICE_NAME, sizeof(cBuffer), &cBuffer, NULL);
-printf(" Device %s\n", cBuffer);
-printf(" ---------------------------------\n");
-clPrintDevInfo(devices[i]);
-sProfileString += ", Device = ";
-sProfileString += cBuffer;
-      }
+          // check for 0 devices found or errors...
+          if (ciDeviceCount == 0) {
+            printf(" No devices found supporting OpenCL (return code %i)\n\n", ciErrNum);
+            bPassed = false;
+            sProfileString += "0";
+          } else if (ciErrNum != CL_SUCCESS) {
+            printf(" Error %i in clGetDeviceIDs call !!!\n\n", ciErrNum);
+            bPassed = false;
+          } else {
+            // Get and log the OpenCL device ID's
+            ciErrNum = clGetPlatformInfo (clSelectedPlatformID, CL_PLATFORM_NAME, sizeof(cBuffer), cBuffer, NULL);
+            printf(" %u devices found supporting OpenCL on: %s\n\n", ciDeviceCount, cBuffer);
+            char cTemp[2];
+            sprintf(cTemp, "%u", ciDeviceCount);
+            sProfileString += cTemp;
+            if ((devices = (cl_device_id*)malloc(sizeof(cl_device_id) * ciDeviceCount)) == NULL) {
+              printf(" Failed to allocate memory for devices !!!\n\n");
+              bPassed = false;
+            }
+            ciErrNum = clGetDeviceIDs (clSelectedPlatformID, CL_DEVICE_TYPE_ALL, ciDeviceCount, devices, &ciDeviceCount);
+            if (ciErrNum == CL_SUCCESS) {
+              for(unsigned int i = 0; i < ciDeviceCount; ++i )  {
+                printf(" ----------------------------------\n");
+                clGetDeviceInfo(devices[i], CL_DEVICE_NAME, sizeof(cBuffer), &cBuffer, NULL);
+                printf(" Device %s\n", cBuffer);
+                printf(" ---------------------------------\n");
+                clPrintDevInfo(devices[i]);
+                sProfileString += ", Device = ";
+                sProfileString += cBuffer;
+              }
             } else {
-      printf(" Error %i in clGetDeviceIDs call !!!\n\n", ciErrNum);
-      bPassed = false;
-    }
-  }
+              printf(" Error %i in clGetDeviceIDs call !!!\n\n", ciErrNum);
+              bPassed = false;
+            }
+          }
 
-  // masterlog info
-  sProfileString += "\n";
-  printf("%s", sProfileString.c_str());
-}
+          // masterlog info
+          sProfileString += "\n";
+          printf("%s", sProfileString.c_str());
+        }
       }
-	free(clPlatformIDs);
+      free(clPlatformIDs);
     }
   }
 
@@ -288,10 +288,10 @@ sProfileString += cBuffer;
 
       std::stringstream tmp_stream("");
       do {
-	cpuinfo >> tmp;
-	if (tmp != std::string("stepping")) {
-	  tmp_stream << tmp.c_str() << " ";
-	}
+        cpuinfo >> tmp;
+        if (tmp != std::string("stepping")) {
+          tmp_stream << tmp.c_str() << " ";
+        }
 
       }
       while (tmp != std::string("stepping"));
@@ -308,7 +308,7 @@ sProfileString += cBuffer;
   version.getline(versionstr, 255);
 
   printf(" CPU Name: %s\n # of CPU processors: %u\n %s\n\n\n",
-	 cpu_name.c_str(),cpu_num,versionstr);
+      cpu_name.c_str(),cpu_num,versionstr);
 
   // finish
   printf("TEST %s\n\n", bPassed ? "PASSED" : "FAILED !!!");
